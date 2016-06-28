@@ -1,0 +1,602 @@
+---
+title: "ProjectExecutor"
+author: "KunalRelia"
+date: "May 7, 2016"
+output: html_document
+---
+
+
+**Note:** Kindly load all the user defined functions from other files before running the Project executor file.
+
+```{r}
+#setting the wd
+
+setwd("C:\\Users\\Kunal Relia\\OneDrive\\BackUp\\USA Material\\NYU Docs\\Sem3 Docs\\Data Science\\Project\\Final Submission")
+
+#global data frame to store all the data
+globalDataFrame=data.frame(ADMIT_TERM=character(),Decision=character(),Admission_Decision=character(),ACAD_PLAN=character(),ACAD_PROG=character(),X1.GRE.Verbal=integer(),X1.GRE.Quantitative=integer(),Total.Score=integer(),X1.TOEFL.Total=integer(),X1.IELTS.Overall=double(),Transcript1.GPA=double(),Transcript1.School.Name=character(),Stage.of.Process=character(),Submitted.Date=as.Date(character()),Decision.Publish.Date=as.Date(character()),Scholarship_Amount=double(),First_Condition=character(),COUNTRY.OF.CITIZENSHIP=character(),Deposit.Paid=character(),ACAD_LOAD_APPR=character(),stringsAsFactors=FALSE)
+
+
+dataCleaner <- function(arg) {
+  #load data and store it into data frames
+  path<-paste("GraduateAdmissionsData/",arg,".csv",sep="")
+  semesterData<-read.csv(path,header=T)
+  semesterDataDF<-data.frame(semesterData)
+  
+  #selecting the columns that are required
+  semesterDataDF<-semesterDataDF[c(1,5,6,12,13,14,15,17,18,72,19,21,26,27,39,40,49,9,44,47)]
+  
+  #putting in NA for missing values
+  semesterDataDF[semesterDataDF == '']<-NA
+  
+  #removing rows that has admit term column as NA
+  semesterDataDF<-semesterDataDF[complete.cases(semesterDataDF[,1]),]
+ 
+  globalDataFrame<-rbind(globalDataFrame,semesterDataDF)
+  
+  
+  return(globalDataFrame)
+  
+}
+
+dataNumberCleaner <- function() {
+  #user defined function to convert the data into numeric format for analysis purpose
+  
+  #the fields that are important for analysis is converted to numbers
+  ADMIT_TERM=0
+  Admission_Decision=0
+  ACAD_PLAN=0
+  ACAD_PROG=0
+  X1.GRE.Verbal=0
+  X1.GRE.Quantitative=0
+  Total.Score=0
+  X1.TOEFL.Total=0
+  X1.IELTS.Overall=0
+  Transcript1.GPA=0
+  Submitted.Date=0
+  Scholarship_Amount=0
+  COUNTRY.OF.CITIZENSHIP=0
+  ACADLOAD_APPR=0
+  
+  counter<-globalDataFrame$ADMIT_TERM
+  
+  for(i in 1:length(counter)) {
+    print(i)
+    
+    #Each term is assigned a number. For Eg;Fall2007 is 0 and so on
+    
+    if(!is.na(globalDataFrame$ADMIT_TERM[i])) {
+      if(globalDataFrame$ADMIT_TERM[i]=="Fall 2007") {
+        ADMIT_TERM=0;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2008") {
+        ADMIT_TERM=1;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2009") {
+        ADMIT_TERM=2;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2010") {
+        ADMIT_TERM=3;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2011") {
+        ADMIT_TERM=4;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2012") {
+        ADMIT_TERM=5;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2013") {
+        ADMIT_TERM=6;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Fall 2014") {
+        ADMIT_TERM=7;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2008") {
+        ADMIT_TERM=8;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2009") {
+        ADMIT_TERM=9;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2010") {
+        ADMIT_TERM=10;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2011") {
+        ADMIT_TERM=11;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2012") {
+        ADMIT_TERM=12;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2013") {
+        ADMIT_TERM=13;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2014") {
+        ADMIT_TERM=14;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Spring 2015") {
+        ADMIT_TERM=15;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Summer 2009") {
+        ADMIT_TERM=16;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Summer 2010") {
+        ADMIT_TERM=17;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Summer 2011") {
+        ADMIT_TERM=18;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Summer 2013") {
+        ADMIT_TERM=19;
+      }
+      else if(globalDataFrame$ADMIT_TERM[i]=="Summer 2014") {
+        ADMIT_TERM=20;
+      }
+      else {
+        ADMIT_TERM=NA
+      }
+    }
+    else {
+      ADMIT_TERM=NA
+    }
+    
+    if(!is.na(globalDataFrame$Admission_Decision[i])) {
+      if(globalDataFrame$Admission_Decision[i]=="Admit") {
+        Admission_Decision=1;
+      }
+      else if(globalDataFrame$Admission_Decision[i]=="Reject") {
+        Admission_Decision=0;
+      }
+      else {
+        Admission_Decision=NA
+      }
+    }
+    else {
+      Admission_Decision=NA
+    } 
+    
+    plans = c("Accelerated Management of Technology","Achieving World Class Quality","Applied Physics","Bioengineering","Bioinformatics","Bioinstrumentation","Biomedical Engineering","Biotechnology & Entrepreneurship","Chemical Engineering","Chemistry","Civil Engineering","Computer Engineering","Computer Science","Construction Mgmt","Cyber Security","Electrical Engineering","Electrophysics","Entrepreneurship","Environmental Engineering","Environmental Science","Environment-Beh Studies","Exec Construction Mgmt","Executive Management of Technology","Financial Engineering","History of Science","Image Processing","Industrial Engineering","Information Management","Information Systems Engng","Integrated Digital Media","Management","Management of Technology","Manuf Excel by Design","Manufacturing Engineering","Materials Chemistry","Materials Science","Mathematics","MBA","ME Interdisp Stdy in Engr (WI)","Mechanical Engineering","Online Bioinformatics","Online Computer Engineering","Online Cyber Security","Online Electrical Engineering","Online Human Resource Management","Online Industrial Engineering","Online Interdisp Stdy in Engr (WI)","Online Management of Technology","Online Manufacturing Engineering","Online Organizational Behavior","Online Power Electronics and System","Online Project Management","Online Systems Engineering","Online Telecommunication Networks","Online Wireless Communications","Operations Management","Organizational Behavior","Physics","Polymer Science and Engr","Power Electronics and Systems","Power Systems Engineering","Power Systems Management","Project Management","Risk Management","Software Engineering","Specialized Journalism","Systems Engineering","Systems Integration","Technical Writ & Spec Journ","Technology Mgmt","Telecom and Info Mgt","Telecommunication Networks","Telecommunications Mgmt","Traffic Engineering","Transportation Management","Transportation Planning","Urban Sys Engr & Mgmt","Wireless Communications","Yeda Management","Yeda Organizational Behavior")
+    
+    if(!is.na(globalDataFrame$ACAD_PLAN[i])) {
+      if(globalDataFrame$ACAD_PLAN[i] == "Biotechnol & Entrepreneursh" || globalDataFrame$ACAD_PLAN[i]=="Biotechnology") {
+        globalDataFrame$ACAD_PLAN[i]="Biotechnology & Entrepreneurship";
+      }
+      if(globalDataFrame$ACAD_PLAN[i]=="Construction Management") {
+        globalDataFrame$ACAD_PLAN[i]=  "Construction Mgmt";
+      }
+      if(globalDataFrame$ACAD_PLAN[i]=="Environment-Behavior Studie" || globalDataFrame$ACAD_PLAN[i]=="Environment-Behavior Studies") {
+        globalDataFrame$ACAD_PLAN[i]="Environment-Beh Studies";
+      }
+      if(globalDataFrame$ACAD_PLAN[i]=="Technology Management") {
+        globalDataFrame$ACAD_PLAN[i]="Technology Mgmt";
+      }
+      if(globalDataFrame$ACAD_PLAN[i]=="Transport Planning & Eng" || globalDataFrame$ACAD_PLAN[i]=="Transport Planning and Engr") {
+        globalDataFrame$ACAD_PLAN[i]="Transportation Planning";
+      }
+      
+      #each matching department is assigned a unique number
+      ACAD_PLAN=match(globalDataFrame$ACAD_PLAN[i],plans,nomatch=500)
+      
+      if(ACAD_PLAN==500){
+        ACAD_PLAN=NA
+      }
+    }
+    else {
+      ACAD_PLAN=NA
+    }
+  
+    if(!is.na(globalDataFrame$ACAD_PROG[i])) {
+      if(globalDataFrame$ACAD_PROG[i]=="Certificate") {
+        ACAD_PROG=0;
+      }
+      else if(globalDataFrame$ACAD_PROG[i]=="Doctoral") {
+        ACAD_PROG=1;
+      }
+      else if(globalDataFrame$ACAD_PROG[i]=="Master of Business Admin" || globalDataFrame$ACAD_PROG[i]=="Master of Business Administration") {
+        ACAD_PROG=2;
+      }
+      else if(globalDataFrame$ACAD_PROG[i]=="Master of Engineering") {
+        ACAD_PROG=3;
+      }
+      else if(globalDataFrame$ACAD_PROG[i]=="Master of Science") {
+        ACAD_PROG=4;
+      }
+      else {
+        ACAD_PROG=NA
+      }
+    }
+    else {
+      ACAD_PROG=NA
+    }
+    
+    if(!is.na(globalDataFrame$X1.GRE.Verbal[i])) {
+      X1.GRE.Verbal=as.numeric(globalDataFrame$X1.GRE.Verbal[i]);
+    }
+    else {
+      X1.GRE.Verbal=NA
+    }
+    
+    if(!is.na(globalDataFrame$X1.GRE.Quantitative[i])) {
+      X1.GRE.Quantitative=as.numeric(globalDataFrame$X1.GRE.Quantitative[i]);
+    }
+    else {
+      X1.GRE.Quantitative=NA
+    }
+  
+    if(!is.na(globalDataFrame$Total.Score[i])) {
+      Total.Score=as.numeric(globalDataFrame$Total.Score[i]);
+    }
+    else {
+      Total.Score=NA
+    }
+    
+    if(!is.na(globalDataFrame$X1.TOEFL.Total[i])) {
+      X1.TOEFL.Total=as.numeric(globalDataFrame$X1.TOEFL.Total[i]);
+    }
+    else {
+      X1.TOEFL.Total=NA
+    }
+    
+    if(!is.na(globalDataFrame$X1.IELTS.Overall[i])) {
+      X1.IELTS.Overall=as.numeric(globalDataFrame$X1.IELTS.Overall[i]);
+    }
+    else {
+      X1.IELTS.Overall=NA
+    }
+    
+    if(!is.na(globalDataFrame$Transcript1.GPA[i])) {
+      Transcript1.GPA=as.numeric(globalDataFrame$Transcript1.GPA[i]);
+    }
+    else {
+      Transcript1.GPA=NA
+    }
+    
+    if(!is.na(globalDataFrame$Scholarship_Amount[i])) {
+      Scholarship_Amount=as.numeric(globalDataFrame$Scholarship_Amount[i]);
+    }
+    else {
+      Scholarship_Amount=NA
+    }
+  
+    if(!is.na(globalDataFrame$Submitted.Date[i])) {
+      
+      Submitted.Date=as.numeric(as.POSIXlt(globalDataFrame$Submitted.Date[i],format="%d/%m/%Y"));
+    }
+    else {
+      Submitted.Date=NA
+    }
+    
+    if(!is.na(globalDataFrame$ACAD_LOAD_APPR[i])) {
+      if(globalDataFrame$ACAD_LOAD_APPR[i]=="Part-Time") {
+        ACADLOAD_APPR=0;
+      }
+      else if(globalDataFrame$ACAD_LOAD_APPR[i]=="Full-Time") {
+        ACADLOAD_APPR=1;
+      }
+      else {
+        ACADLOAD_APPR=NA
+      }
+    }
+    else {
+      ACADLOAD_APPR=NA
+    }
+    
+    countries<-c("Afghanistan","Albania","Algeria","Angola","Antigua and Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bangladesh","Barbados","Belarus","Belgium","Benin","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Bulgaria","Burkina Faso","Burundi","Cameroon","Canada","Chile","China","Christmas Island","Colombia","Congo","Costa Rica","Cote D'Ivoire","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Ethiopia","Fiji","Finland","Fmr Yugoslav Rep of Macedonia","France","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guyana","Haiti","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran (Islamic Republic Of)","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakstan","Kenya","Korea","Kuwait","Kyrgyzstan","Lebanon","Lesotho","Liberia","Libyan Arab Jamahiriya","Lithuania","Macau","Madagascar","Malaysia","Mali","Mauritania","Mauritius","Mexico","Mongolia","Morocco","Myanmar","Namibia","Nepal","Netherlands","Netherlands Antilles","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Panama","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar","Romania","Russian Federation","Rwanda","Saint Lucia","Saudi Arabia","Scotland","Senegal","Sierra Leone","Singapore","Somalia","South Africa","Spain","Sri Lanka","St Vincent and the Grenadines","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syrian Arab Republic","Taiwan","Tanzania","Thailand","Togo","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","US Minor Outlying Islands","Uzbekistan","Venezuela","Viet Nam","Yemen","Yugoslavia","Zaire","Zambia","Zimbabwe")
+    
+    if(!is.na(globalDataFrame$COUNTRY.OF.CITIZENSHIP[i])) {
+      #each country is assigned a unique id
+      COUNTRY.OF.CITIZENSHIP=match(globalDataFrame$COUNTRY.OF.CITIZENSHIP[i],countries,nomatch=5000)
+      
+      if(COUNTRY.OF.CITIZENSHIP==5000){
+        COUNTRY.OF.CITIZENSHIP=NA
+      }
+    }
+    else {
+      COUNTRY.OF.CITIZENSHIP=NA
+    }
+    
+    x<-c(ADMIT_TERM,Admission_Decision,ACAD_PLAN,ACAD_PROG,X1.GRE.Verbal,X1.GRE.Quantitative,Total.Score,X1.TOEFL.Total,X1.IELTS.Overall,Transcript1.GPA,Submitted.Date,Scholarship_Amount,COUNTRY.OF.CITIZENSHIP,ACADLOAD_APPR)
+    globalNumberDataFrame<-rbind(globalNumberDataFrame,x)
+  }
+  
+  return(globalNumberDataFrame)
+  
+}
+
+linearRegression <- function(arg) {
+  
+  arg<-7
+  
+  # refining the data to get cleaner data for the input semester
+  newdata <- subset(globalNumberDataFrame, X1.GRE.Verbal <= 170 & X1.GRE.Quantitative <= 170 & ADMIT_TERM == arg & ACAD_PLAN== 13 & Transcript1.GPA<=4.00 & ACAD_PROG==4, select=c(Admission_Decision,ACAD_PLAN,ACAD_PROG,ADMIT_TERM,X1.GRE.Verbal, X1.GRE.Quantitative,Transcript1.GPA,Scholarship_Amount))
+  
+ # analysis first on entire data followed by just on a particular sem.
+ # for report purposes, I have considered Fall2014
+ 
+ # Admission decision based on many factors
+  print("Linear regression for admission decision for entire dataset and many factors:")
+  model<-lm(globalNumberDataFrame$Admission_Decision~globalNumberDataFrame$ACAD_PLAN+globalNumberDataFrame$ACAD_PROG+globalNumberDataFrame$ADMIT_TERM+globalNumberDataFrame$X1.GRE.Verbal+globalNumberDataFrame$X1.GRE.Quantitative+globalNumberDataFrame$Transcript1.GPA)
+  print(summary(model))
+  
+  plot(resid(model)~fitted(model))
+  Sys.sleep(1)
+  plot(resid(model))
+  Sys.sleep(1)
+  
+  print("The plots for Fitted Regression model are not good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that none of the points are around the residual line which is a bad model sign. Further when we analyze the residual vs fitted plot, we see that most of the points are near (2 parallel lines).")
+  print("")
+  print("")
+  
+  print("Linear regression for admission decision for particular(here Fall2014) semester and many factors:")
+  model<-lm(newdata$Admission_Decision~newdata$X1.GRE.Verbal+newdata$X1.GRE.Quantitative+newdata$Transcript1.GPA)
+  print(summary(model))
+  
+  plot(resid(model)~fitted(model))
+  Sys.sleep(1)
+  plot(resid(model))
+  Sys.sleep(1)
+  
+  print("The plots for Fitted Regression model are not good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that none of the points are around the residual line which is a bad model sign. 
+Further when we analyze the residual vs fitted plot, we see that most of the points are near (2 parallel lines).")
+  print("")
+  print("")
+  
+  #Admission decision based on selected parameters
+  print("Linear regression for admission decision for entire dataset and selected factors:")
+  model<-lm(globalNumberDataFrame$Admission_Decision~globalNumberDataFrame$X1.GRE.Verbal+globalNumberDataFrame$X1.GRE.Quantitative+globalNumberDataFrame$ACAD_PLAN+globalNumberDataFrame$Transcript1.GPA)
+  print(summary(model))
+  
+  plot(resid(model)~fitted(model))
+  Sys.sleep(1)
+  plot(resid(model))
+  Sys.sleep(1)
+  print("The plots for Fitted Regression model are not good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that none of the points are around the residual line which is a bad model sign. 
+Further when we analyze the residual vs fitted plot, we see that most of the points are near.")
+  print("")
+  print("")
+  print("Linear regression for admission decision for particular(here Fall2014) semester and selected factors:")
+  model<-lm(newdata$Admission_Decision~newdata$X1.GRE.Verbal+newdata$X1.GRE.Quantitative+newdata$Transcript1.GPA)
+  print(summary(model))
+  
+  plot(resid(model)~fitted(model))
+  Sys.sleep(1)
+  plot(resid(model))
+  Sys.sleep(1)
+
+  print("The plots for Fitted Regression model are not good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that none of the points are around the residual line which is a bad model sign. 
+Further when we analyze the residual vs fitted plot, we see that most of the points are near.")
+  print("")
+  print("")
+  
+  #Scholarship amount based on admission decision and various test scores
+  print("Linear regression for scholarship amount for all semesters and corresponding factors:")
+  model<-lm(globalNumberDataFrame$Scholarship_Amount~globalNumberDataFrame$Admission_Decision+globalNumberDataFrame$X1.GRE.Verbal+globalNumberDataFrame$X1.GRE.Quantitative+globalNumberDataFrame$ACAD_PLAN+globalNumberDataFrame$Transcript1.GPA)
+  print(summary(model))
+  
+  plot(resid(model)~fitted(model))
+  Sys.sleep(1)
+  plot(resid(model))
+  Sys.sleep(1)
+  print("The plots for Fitted Regression model are not good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that none of the points are around the residual line which is a bad model sign. 
+Further when we analyze the residual vs fitted plot, we see that most of the points are near.")
+  print("")
+  print("")
+  print("Linear regression for scholarship amount for particular(here Fall2014) semester and corresponding factors:")
+  model<-lm(newdata$Scholarship_Amount~newdata$Admission_Decision+newdata$X1.GRE.Verbal+newdata$X1.GRE.Quantitative+newdata$Transcript1.GPA)
+  print (summary(model))
+  
+  plot(resid(model)~fitted(model))
+  plot(resid(model))
+  
+  Sys.sleep(10)
+  
+  print("The plots for Fitted Regression model look good. We know that in the residual graph, the estimated regression line for the model we built is denoted by residual = 0. Hence, we can clearly see that most of the points are around the residual line which is a good sign. Further when we analyze the residual vs fitted plot, we see that most of the points are in close proximity. Though there are many outliers that can be seen which are far from the regression line.")
+}
+
+knnAlgoAdmissionDecision<-function(arg) {
+  
+  arg<-7
+  newdata <- subset(globalNumberDataFrame, X1.GRE.Verbal <= 170 & X1.GRE.Quantitative <= 170 & ADMIT_TERM == arg & ACAD_PLAN== 13 & Transcript1.GPA<=4.00 & ACAD_PROG==4 & (Admission_Decision == 0 | Admission_Decision == 1), select=c(Admission_Decision,ACAD_PLAN,ACAD_PROG,ADMIT_TERM,X1.GRE.Verbal, X1.GRE.Quantitative,Transcript1.GPA,Scholarship_Amount))
+  
+  KNNDF<-newdata
+  KNNDFColl<-data.frame(newdata$Admission_Decision)
+
+  folds <- cut(seq(1,nrow(KNNDF)),breaks=10,labels=FALSE)
+
+  accuracy<-integer()
+  icol<-integer()
+
+  for(i in 1:10) {
+    icol <- c(icol,i)
+    testIndex<-which(folds==i,arr.ind=TRUE)
+    testData<-KNNDF[testIndex,]
+    trainData<-KNNDF[-testIndex,]
+    trainres<-(KNNDFColl[-testIndex,])
+    testres<-(KNNDFColl[testIndex,])
+    library(e1071)
+    library(class)
+    library(caret)
+    knn_req<-knn(train=data.frame(trainData),test=data.frame(testData),cl=trainres,k=3)
+    getAccuracy<-confusionMatrix(testres,knn_req)
+    accuracy<-c(accuracy,getAccuracy$overall[1])
+  }
+
+  print(getAccuracy)
+  
+  plot(icol,accuracy,xlab="Fold Counter",ylab="Accuracy")
+  Sys.sleep(1)
+  
+  print("From the above derived graph and confusion matrix, the accuracy levels match and they tend to be about 99%. The high accuracy is good for our analysis. Ideally, the accuracy is expected to be pretty high. And here, as per the confusion matrix, we are getting a very high accuracy. Finally we can conclude that Fold 3 & Fold 4 are very good selections as accuracy tends to be 1. We can conclude that Fold 5 & 10 are the least accurate in the group and hence not more suited for this dataset")
+  sum=0
+
+  for(acc in accuracy) {
+    sum=sum+acc
+  }
+
+  print("Accuracy:")
+  print(sum/length(accuracy))
+}
+
+knnAlgoScholarship<-function(arg) {
+  
+  arg<-7
+  
+  newdata <- subset(globalNumberDataFrame, X1.GRE.Verbal <= 170 & X1.GRE.Quantitative <= 170 & ADMIT_TERM == arg & ACAD_PLAN== 13 & Transcript1.GPA<=4.00 & ACAD_PROG==4 & (Admission_Decision == 0 | Admission_Decision == 1), select=c(Admission_Decision,ACAD_PLAN,ACAD_PROG,ADMIT_TERM,X1.GRE.Verbal, X1.GRE.Quantitative,Transcript1.GPA,Scholarship_Amount))
+  
+  KNNDF<-newdata
+  KNNDFColl<-data.frame(newdata$Scholarship_Amount)
+
+  folds <- cut(seq(1,nrow(KNNDF)),breaks=10,labels=FALSE)
+
+  accuracy<-integer()
+  icol<-integer()
+
+  for(i in 1:10) {
+    icol <- c(icol,i)
+    testIndex<-which(folds==i,arr.ind=TRUE)
+    testData<-KNNDF[testIndex,]
+    trainData<-KNNDF[-testIndex,]
+    trainres<-(KNNDFColl[-testIndex,])
+    testres<-(KNNDFColl[testIndex,])
+    library(e1071)
+    library(class)
+    library(caret)
+    knn_req<-knn(train=data.frame(trainData),test=data.frame(testData),cl=trainres,k=3)
+    getAccuracy<-confusionMatrix(testres,knn_req)
+    accuracy<-c(accuracy,getAccuracy$overall[1])
+  }
+  print(getAccuracy)
+
+  plot(icol,accuracy,xlab="Fold Counter",ylab="Accuracy")
+  Sys.sleep(1)
+  sum=0
+  print("From the above derived graph and confusion matrix, the accuracy levels match and they tend to be about 99%. The high accuracy is good for our analysis. Ideally, the accuracy is expected to be pretty high. And here, as per the confusion matrix, we are getting a very high accuracy. Finally we can conclude that except Fold 1,2 & 4 all are very good selections as accuracy tends to be 1. We can conclude that Fold 1,2 & 4 are the less accurate in the group and hence not more suited for this dataset")
+
+  for(acc in accuracy) {
+    sum=sum+acc
+  }
+
+  print("Accuracy:")
+  print(sum/length(accuracy))
+}
+
+knnAlgoScholarshipRegressionModel <- function(arg) {
+  
+  #here statically arg is passed and made 7 "Fall2014"
+  arg<-7
+  
+  newdata <- subset(globalNumberDataFrame, X1.GRE.Verbal <= 170 & X1.GRE.Quantitative <= 170 & ADMIT_TERM == arg & ACAD_PLAN== 13 & Transcript1.GPA<=4.00 & ACAD_PROG==4 & (Admission_Decision == 0 | Admission_Decision == 1), select=c(Admission_Decision,ACAD_PLAN,ACAD_PROG,ADMIT_TERM,X1.GRE.Verbal, X1.GRE.Quantitative,Transcript1.GPA,Scholarship_Amount))
+  
+  model<-lm(newdata$Scholarship_Amount~newdata$Admission_Decision+newdata$X1.GRE.Verbal+newdata$X1.GRE.Quantitative+newdata$Transcript1.GPA)
+  
+  y=model$model$'newdata$Scholarship_Amount'
+
+  predColDF<-data.frame(y)
+  normalize<-function(x)  
+  { 
+     return ((x-min(x))/(max(x)-min(x))) 
+  }
+  normalizeGlassData<-as.data.frame(lapply(newdata[,c(1,5,6,7)],normalize))
+  sampleTrainSet<-floor(0.75*nrow(normalizeGlassData))
+  set.seed(123)
+  train<-sample(seq_len(nrow(normalizeGlassData)),size=sampleTrainSet)
+  traindata<-normalizeGlassData[train,]
+  trainres<-(predColDF[train,])
+  testdata<-normalizeGlassData[-train,]
+  testres<-(predColDF[-train,])
+
+  #install.packages("class")
+  require(class)
+  knn(train=traindata, test=testdata,cl=trainres,k=5)
+
+  #install.packages("e1071")
+  require(e1071)
+  #install.packages("caret")
+  require(caret)
+  confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres,k=5))
+
+  kValues<-c(1,2,3,4,6,7,9,12,15,18,21,25,28,30,35)
+  for(val in kValues)
+  {
+    print("k=")
+    print(val)
+    print(confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres,k=val)))
+  }
+
+  acc<-integer()
+  for(val in kValues)
+  {
+    ans<-confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres, k=val))
+    acc<-c(acc,ans$overall[1])
+  }
+  plot(kValues,acc,xlab="values of K",ylab="Accuracy",type="l")
+  
+  print("From the above observations of the graph, we can conclude that we get the maximum accuracy for k=20. The most optimal value of k is 20. ")
+
+  Sys.sleep(1)
+
+}
+
+
+#call the dataCleaner() metod with a parameter.
+#method returns the globalDataFrame with values appended for each semester
+globalDataFrame<-dataCleaner("Fall 2007")
+globalDataFrame<-dataCleaner("Fall 2008")
+globalDataFrame<-dataCleaner("Fall 2009")
+globalDataFrame<-dataCleaner("Fall 2010")
+globalDataFrame<-dataCleaner("Fall 2011")
+globalDataFrame<-dataCleaner("Fall 2012")
+globalDataFrame<-dataCleaner("Fall 2013")
+globalDataFrame<-dataCleaner("Fall 2014")
+
+globalDataFrame<-dataCleaner("Spring 2008")
+globalDataFrame<-dataCleaner("Spring 2009")
+globalDataFrame<-dataCleaner("Spring 2010")
+globalDataFrame<-dataCleaner("Spring 2011")
+globalDataFrame<-dataCleaner("Spring 2012")
+globalDataFrame<-dataCleaner("Spring 2013")
+globalDataFrame<-dataCleaner("Spring 2014")
+globalDataFrame<-dataCleaner("Spring 2015")
+
+globalDataFrame<-dataCleaner("Summer 2009")
+globalDataFrame<-dataCleaner("Summer 2010")
+globalDataFrame<-dataCleaner("Summer 2011")
+globalDataFrame<-dataCleaner("Summer 2013")
+globalDataFrame<-dataCleaner("Summer 2014")
+
+#global dataframe that contains only numeric data for analysis purpose
+globalNumberDataFrame=data.frame(ADMIT_TERM=integer(),Admission_Decision=integer(),ACAD_PLAN=integer(),ACAD_PROG=integer(),X1.GRE.Verbal=integer(),X1.GRE.Quantitative=integer(),Total.Score=integer(),X1.TOEFL.Total=integer(),X1.IELTS.Overall=double(),Transcript1.GPA=double(),Submitted.Date=integer(),Scholarship_Amount=double(),COUNTRY.OF.CITIZENSHIP=integer(),ACAD_LOAD_APPR=integer(),stringsAsFactors=FALSE)
+
+#Call the dataNumberCleaner() method once to clean the data and convert each non-numeric 
+#data into numbers following a certain guidelines used in the method
+
+#Currently commented out just for knitting the HTML as it takes a long time to clean up the
+#data and process it
+#globalNumberDataFrame<-dataNumberCleaner()
+
+#Temp code - Used to knit HTML - data read from already cleaned file that was saved earlier
+path<-paste("MyDataNumber.csv",sep="")
+numberData<-read.csv(path,header=T)
+globalNumberDataFrame<-data.frame(numberData)
+
+header<-c("ADMIT_TERM","Admission_Decision","ACAD_PLAN","ACAD_PROG","X1.GRE.Verbal","X1.GRE.Quantitative","Total.Score","X1.TOEFL.Total","X1.IELTS.Overall","Transcript1.GPA","Submitted.Date","Scholarship_Amount","COUNTRY.OF.CITIZENSHIP","ACAD_LOAD_APPR")
+colnames(globalNumberDataFrame)<-unlist(header) 
+
+
+#write the data from both the dataframes into a csv file
+write.csv(globalDataFrame, file = "MyData.csv",row.names=FALSE, na="")
+write.csv(globalNumberDataFrame, file = "MyDataNumber.csv",row.names=FALSE, na="")
+
+linearRegression(7)
+
+Sys.sleep(100)
+
+print("From the above regression model, we see that admission, as it was expected, is NOT only dependent on scores & GPA. Various other factors like resume and SOP do play an important role in determining the admission decision. Further, luckily this time as expected, the scholarship amount is highly dependent on the admission decision, test sscores & GPA. From the final residual graph, we can clearly see that most of the values are around zero. But there are quiet a few outliers. These outliers were a result of extra scholarship given to a student based on various factors ranging from dean's recommendation to financial condition.")
+
+
+print("Special Note: Given the new GRE format, we are interested in analyzing only those scores that are out of 340. Remaining can be ignored because Admission and scholarship no longer depend on those scores.Further, GMAT scores are not used for KNN as only one department accepts such scores. Hence, it is not used in prediction model as very few scores are reported.")
+
+knnAlgoAdmissionDecision(7)
+knnAlgoScholarship(7)
+knnAlgoScholarshipRegressionModel(7)
+
+print("We desire a higher Specificity here instead of sesitivity. This is becuase a wrong prediction that one will get admission is not a good thing. Imagine first getting an admission and then getting a rejection apologizing for the earlier 'wrong' decision. Rather exact opposite case is something that is not so bad. Here, False Negative is better than a False Positive.")
+
+```

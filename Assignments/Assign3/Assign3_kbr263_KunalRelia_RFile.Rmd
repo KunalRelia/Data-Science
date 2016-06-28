@@ -1,0 +1,117 @@
+---
+title: "Assign3_kbr263_KunalRelia_RFile"
+author: "KunalRelia"
+date: "March 22, 2016"
+output: pdf_document
+---
+#Question1
+#a)
+data<-read.csv(file.choose(),header = T,skip =4,sep=",")
+View(data)
+dataDF<-data.frame(data)
+
+dataDF<-dataDF[,-7]
+dataDF<-dataDF[,-1]
+
+dataDF[,19]<-as.Date(dataDF[,19],"%d/%m/%Y")
+
+install.packages("stringr")
+library("stringr")
+dataDF$APARTMENT.NUMBER[str_trim(dataDF$APARTMENT.NUMBER)==""] <- NA
+dataDF$APARTMENT.NUMBER[str_trim(dataDF$APARTMENT.NUMBER)=="-"] <- NA
+
+dataDF$LAND.SQUARE.FEET[dataDF$LAND.SQUARE.FEET==0] <- NA
+dataDF$GROSS.SQUARE.FEET[dataDF$GROSS.SQUARE.FEET==0] <- NA
+
+sapply(dataDF,class)
+
+dataDF[,'LAND.SQUARE.FEET']<-as.numeric(gsub(",","",dataDF[,'LAND.SQUARE.FEET']))
+dataDF[,'GROSS.SQUARE.FEET']<-as.numeric(gsub(",","",dataDF[,'GROSS.SQUARE.FEET']))
+dataDF[,'SALE.PRICE']<-as.numeric(gsub(",","",dataDF[,'SALE.PRICE']))
+
+sapply(dataDF,class)
+
+dataDFDup<-data.frame(dataDF)
+
+#b)
+#i)
+plot(dataDF$NEIGHBORHOOD,dataDF$SALE.PRICE)
+
+numberOfNeighborhoods<-unique(dataDF$NEIGHBORHOOD)
+dataDF.sale<-dataDF[which(dataDF$GROSS.SQUARE.FEET>0 & dataDF$LAND.SQUARE.FEET>0 & dataDF$SALE.PRICE>0),]
+neighborhoodsDF<-data.frame(neighborhoods=unique(dataDF$NEIGHBORHOOD))
+
+for(i in 1:length(numberOfNeighborhoods)){
+neighborhoodsDF$sale_price[i]<-sd(dataDF.sale$SALE.PRICE[dataDF.sale$NEIGHBORHOOD == neighborhoodsDF$neighborhoods[i]],na.rm=TRUE)
+}
+View(neighborhoodsDF)
+
+#ii)
+plot(dataDF$SALE.DATE,dataDF$SALE.PRICE)
+
+#Question2
+#a)
+dataDF.sale<-dataDF[which(dataDF$GROSS.SQUARE.FEET>0 & dataDF$LAND.SQUARE.FEET>0 & dataDF$SALE.PRICE>0),]
+model<-lm(SALE.PRICE~BUILDING.CLASS.CATEGORY+GROSS.SQUARE.FEET+LAND.SQUARE.FEET+COMMERCIAL.UNITS+RESIDENTIAL.UNITS+NEIGHBORHOOD+YEAR.BUILT,data=dataDF.sale)
+summary(model)
+
+#b)
+model<-lm(SALE.PRICE~factor(BUILDING.CLASS.CATEGORY)+GROSS.SQUARE.FEET+LAND.SQUARE.FEET+COMMERCIAL.UNITS+RESIDENTIAL.UNITS+NEIGHBORHOOD+factor(YEAR.BUILT),data=dataDF.sale)
+summary(model)
+plot(resid(model)~fitted(model))
+plot(resid(model))
+
+#c+d+e)
+KNNDF<-data.frame(dataDF.sale[,9])
+KNNDFColl<-data.frame(dataDF.sale$NEIGHBORHOOD)
+
+folds <- cut(seq(1,nrow(KNNDF)),breaks=10,labels=FALSE)
+
+accuracy<-integer()
+icol<-integer()
+
+for(i in 1:10) {
+icol <- c(icol,i)
+testIndex<-which(folds==i,arr.ind=TRUE)
+testData<-KNNDF[testIndex,]
+trainData<-KNNDF[-testIndex,]
+trainres<-(KNNDFColl[-testIndex,])
+testres<-(KNNDFColl[testIndex,])
+library(e1071)
+library(class)
+library(caret)
+knn_req<-knn(train=data.frame(trainData),test=data.frame(testData),cl=trainres,k=3)
+getAccuracy<-confusionMatrix(testres,knn_req)
+accuracy<-c(accuracy,getAccuracy$overall[1])
+}
+
+plot(icol,accuracy,xlab="Fold Counter",ylab="Accuracy")
+
+sum=0
+
+for(acc in accuracy) {
+sum=sum+acc
+}
+
+print(sum/length(accuracy))
+
+#Question3
+#a)
+trans<-preProcess(dataDF[,-(13:14)],method=c("BoxCox","center","scale","pca"))
+attach(trans)
+
+str(dataDF)
+
+PCA_comp<-prcomp(~ RESIDENTIAL.UNITS+COMMERCIAL.UNITS+TOTAL.UNITS+LAND.SQUARE.FEET+GROSS.SQUARE.FEET,data=dataDF,
+na.action=na.omit,scale=T,center=T)
+str(PCA_comp)
+summary(PCA_comp)
+
+#b)
+plot(PCA_comp$rotation[,1],PCA_comp$rotation[,2])
+points(PCA_comp$rotation[,1],PCA_comp$rotation[,3],col="red")
+plot(PCA_comp$rotation[,1])
+plot(PCA_comp$rotation[,2])
+plot(PCA_comp$rotation[,3])
+biplot(PCA_comp,cex=1.5)
+plot(PCA_comp,type='l')

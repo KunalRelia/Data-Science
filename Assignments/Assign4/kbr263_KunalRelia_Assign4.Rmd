@@ -1,0 +1,130 @@
+---
+title: "Assign4"
+author: "KunalRelia"
+date: "April 12, 2016"
+output: html_document
+---
+
+Q1)
+
+a)Read in the files and visualize the network (try using ggplot2 or networkD3 libraries).
+
+```{r}
+#using networkD3 to create the network
+library(networkD3)
+
+#reading and storing vertices
+vertex<-read.table(file.choose(),sep="\t")
+colnames(vertex)<-c("id","item")
+
+#reading and storing edges
+edge<-read.table(file.choose(),sep="\t")
+colnames(edge)<-c("src","dest")
+
+require("sqldf")
+
+#change the ids to names for network readability
+
+sourcenames<-sqldf("select item from edge,vertex where id=src")
+destnames<-sqldf("select item from edge,vertex where id=dest")
+
+graphName <- cbind(sourcenames,destnames)
+colnames(graphName)<-c("srcWithName","destWithName")
+
+#store the information in data frame and draw the network
+data<-data.frame(graphName$srcWithName,graphName$destWithName)
+simpleNetwork(data)
+
+```
+
+Conclusion:
+As per the requirement, we have read the files and created the network.
+
+b) Calculate the degree centrality of each node.
+
+```{r}
+#use igraph to calculate the degree centrality of each node
+library(igraph)
+
+#calculate the degree of centrality
+network<-graph.data.frame(edge,vertex,directed=T)
+centrality<-centralization.degree(network)
+centralityDF<-data.frame(centrality$res)
+View(centralityDF)
+
+```
+
+Conclusion:
+The above generated View gives us the degree centrality of each node in the network.
+
+d) Which are the most connected nodes?
+```{r}
+#appending an index column to determine which node has the highest centrality
+id <- rownames(centralityDF)
+centralityDF <- cbind(id=id, centralityDF)
+
+#sort the centrality by decreasing order
+centralityDF[order(centralityDF$centrality.res,decreasing = TRUE),]
+```
+
+Conclusion:
+From the above written command, the top 5 connected nodes are:
+2             33
+12             29
+79             29
+21             24
+31             23
+
+c)Visually determine what are the furthest ingredients from cocoa powder.
+```{r}
+#visualization by docomposition of graph - Disjoint network nodes are colored differently
+dg<-decompose.graph(network)
+plot(dg[0],dg[1])
+#vertex.connectivity(network)
+
+#Visually, the vertices that are NOT connected to cocoa powder are the furthest. We will calculate the shortest path of all nodes from cocoa powder to validate our claim
+network<-graph.data.frame(edge,vertex,directed=T)
+centrality<-centralization.degree(network)
+centralityDF<-data.frame(centrality$res)
+dist <- shortest.paths(network, v=408)
+max<-0
+farthest<-c()
+count<-0
+
+for(i in 1:562){
+  if(dist[i][1]==Inf && !is.na(dist[i][1]))
+  {
+  count<-count+1
+  farthest<-union(farthest,c(i))
+  }
+}
+farthest
+
+#based on above list, we will select the names based on node id.
+require(sqldf)
+collnames<-sqldf("select item from vertex where id in (93,94,107,108,109,110,111,113,114,256,353,431,432,459,460,463,464,480,481)")
+View(collnames)
+```
+
+Conclusion:
+As per visualization and above validation, following vertices are the farthest :
+item
+1marshmallow
+2marshmallow creme
+3yellow mustard
+4honey mustard
+5mustard
+6dijon mustard
+7spicy brown mustard
+8mussel
+9clam
+10mustard powder
+11mustard seed
+12pound cake
+13angel food cake
+14toothpick
+15skewer
+16baking mix
+17pancake mix
+18avocado
+19guacamole

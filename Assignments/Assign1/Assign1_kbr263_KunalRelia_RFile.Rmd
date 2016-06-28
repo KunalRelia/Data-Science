@@ -1,0 +1,148 @@
+---
+output: pdf_document
+---
+#---
+#title: "Assign1_kbr263_KunalRelia_RFile"
+#output: pdf_document
+#---
+
+#read the data file of GFT of USA
+data<-read.csv(file.choose(),head=TRUE,sep=",")
+attach(data)
+#Question 1 (Data Exploration)
+
+#b)
+model<-lm(HHS.Region.2..NJ..NY.~New.York+New.Jersey)
+summary(model)
+model<-lm(HHS.Region.10..AK..ID..OR..WA.~Alaska+Idaho+Oregon+Washington)
+summary(model)
+model<-lm(HHS.Region.6..AR..LA..NM..OK..TX.~Arkansas+Louisiana+New.Mexico+Oklahoma+Texas)
+summary(model)
+
+#c)
+model<-lm(California~Berkeley..CA+Fresno..CA+Irvine..CA+Los.Angeles..CA+Oakland..CA+Sacramento..CA+San.Diego..CA+San.Francisco..CA+San.Jose..CA+Santa.Clara..CA+Sunnyvale..CA)
+summary(model)
+
+model<-lm(Arizona~Mesa..AZ+Phoenix..AZ+Scottsdale..AZ+Tempe..AZ+Tucson..AZ)
+summary(model)
+data["seqOfDates"]<-seq(from=1,to=length(data$Date),by=1)
+attach(data)
+plot(seqOfDates,Arizona,col="red",pch=20)
+points(seqOfDates,Mesa..AZ,col="black")
+points(seqOfDates,Phoenix..AZ,col="yellow")
+points(seqOfDates,Scottsdale..AZ,col="green")
+points(seqOfDates,Tempe..AZ,col="blue")
+points(seqOfDates,Tucson..AZ,col="orange")
+
+#d)
+#mean
+install.packages("lubridate")
+library(lubridate)
+period<-paste(month(data$Date))
+temp<-data.frame(aggregate(HHS.Region.2..NJ..NY.,list(period),mean))
+plot(temp$Group.1,temp$x,xlab="Month",ylab="FLu Level",main="Flu Level v. Month-HHS2")
+
+temp<-data.frame(aggregate(New.York,list(period),mean))
+plot(temp$Group.1,temp$x,xlab="Month",ylab="FLu Level",main="Flu Level v. Month-New York")
+
+temp<-data.frame(aggregate(New.Jersey,list(period),mean))
+plot(temp$Group.1,temp$x,xlab="Month",ylab="FLu Level",main="Flu Level v. Month-New Jersey")
+
+#max
+tempdata<-data[54:63]
+temp<-data.frame(apply(tempdata, 2, function(x) max(x, na.rm = TRUE)))
+tempDF<-data.frame(temp)
+tempDF$names<-rownames(tempDF)
+colnames(tempDF)[2]<-"region"
+colnames(tempDF)[1]<-"value"
+plot(tempDF$value,axes=FALSE,xlab="Flu Values",ylab="regions",main="MAx. Values v. Regions")
+axis(2)
+axis(1,at=seq_along(tempDF$value),labels=as.character((tempDF$region),las=2))
+box()
+
+period<-paste(year(data$Date))
+temp<-data.frame(aggregate(HHS.Region.6..AR..LA..NM..OK..TX.,list(period),max))
+plot(temp$Group.1,temp$x,xlab="Year",ylab="Max FLu Level",main="Max Flu Level v. Year-HHS6")
+
+#e)
+
+#Fetch the data for 2015 for just the states of USA. Once we have this data, find the maximum for each state and create a data frame having state name and maximum value: 
+
+#read the data file of GFT of USA
+fluData<-read.csv(file.choose(),head=TRUE,sep=",",skip=588)
+
+#read the data file of GFT of USA
+header <- read.csv(file.choose(), nrows = 1, header = FALSE, sep =',', stringsAsFactors = FALSE)
+colnames(fluData) <- unlist(header)
+fluData<-fluData[3:53]
+MaxFlu<-data.frame(apply(fluData, 2, function(x) max(x, na.rm = TRUE)))
+colnames(MaxFlu)[1]<-"value"
+
+#Based on the data fetched from above mentioned URL, create a Data frame consisting all the states and union territories along with the estimated 2015 population:
+
+#Read the population file here
+Population<-read.csv(file.choose(),head=TRUE,sep=",")
+PopulationDF<-data.frame(Population[,5])
+colnames(PopulationDF)[1]<-"name"
+PopulationDF[,'2015Pop']<-data.frame(Population[,13])
+
+#Finally, create a new dataframe mergeState which merges MaxFlu and PopulationDF based on the column names, ie, only the country names.
+mergeState<-data.frame(merge(MaxFlu,PopulationDF, by.x=c("names"),by.y=c("name")))
+plot(mergeState$value,mergeState$X2015Pop,xlab="Peak State Values", ylab="State Population", main="Population v. Peak Flu")
+
+#The above conclusion is further supported by means of regression.
+model<-lm(mergeState$value~mergeState$X2015Pop)
+summary(model)
+
+#Question 2 (Simple Data Analysis)
+
+#From the data provided, fetch the data only of 2015, then fetch the maximum value for each country. This value is stored in data frame MaxWeekDF
+##read the data file of GFT of world
+worldData<-read.csv(file.choose(),head=TRUE,sep=",",skip=627)
+#read the data file of GFT of world
+header <- read.csv(file.choose(), nrows = 1, header = FALSE, sep =',', stringsAsFactors = FALSE)
+colnames(worldData) <- unlist(header)
+MaxWeek<-data.frame(apply(worldData, 2, function(x) max(x, na.rm = TRUE)))
+colnames(MaxWeek)[1]<-"value"
+MaxWeekDF<-data.frame(MaxWeek)
+MaxWeekDF$names<-rownames(MaxWeekDF)
+MaxWeekDF<-MaxWeekDF[2:length(MaxWeekDF$names),]
+
+#From the URL mentioned above, fetch all the data then create a new data frame LatitudeDF which just contains the country names and latitude. (the row names of the data frame have been converted to a column)
+install.packages("XML")
+install.packages("RCurl")
+library("XML")
+library("RCurl")
+URL<-getURL("https://developers.google.com/public-data/docs/canonical/countries_csv")
+htmlPage<-data.frame(readHTMLTable(URL,header = TRUE,as.data.frame = TRUE,which=1))
+LatitudeDF<-data.frame(htmlPage$name)
+colnames(LatitudeDF)[1]<-"name"
+LatitudeDF[,'latitude']<-data.frame(htmlPage$latitude)
+
+#Finally, create a new dataframe merge which merges MaxWeekDF and LatitudeDF based on the column names, ie, only the country names.
+merge<-data.frame(merge(MaxWeekDF,LatitudeDF, by.x=c("names"),by.y=c("name")))
+merge$value = as.numeric(as.character(merge$value))
+merge$latitude<-as.numeric(as.character(merge$latitude))
+
+plot(merge$value,merge$latitude,ylab = "Latitude", xlab = "Peak week of Flu", main = "Latitude v. Flu count")
+
+#Question 3 (Web Scrapping)
+
+#a)	Vaccine status data from the given URL
+URL <- getURL("http://www.cdc.gov/mmwr/preview/mmwrhtml/mm6401a4.htm?s_cid=mm6401a4_w")
+htmlPage<-data.frame(readHTMLTable(URL,header = TRUE,as.data.frame = TRUE, skip.rows=41, which=1, stringsAsFactors=FALSE))
+VaccineStatusDF<-data.frame(htmlPage$V1)
+colnames(VaccineStatusDF)[1]<-'Characteristic'
+VaccineStatusDF[,'No.']<-data.frame(htmlPage$V7)
+VaccineStatusDF[,'Total']<-data.frame(htmlPage$V8)
+VaccineStatusDF[,'(%)']<-data.frame(htmlPage$V9)
+VaccineStatusDF[,'p value']<-data.frame(htmlPage$V10)
+VaccineStatusDF<-VaccineStatusDF[4:length(VaccineStatusDF$Characteristic),]
+View(VaccineStatusDF)
+
+#b)	Table from the some random URL
+#URL used: https://developers.google.com/public-data/docs/canonical/countries_csv
+URL<-getURL("https://developers.google.com/public-data/docs/canonical/countries_csv")
+htmlPage<-data.frame(readHTMLTable(URL,header = TRUE,as.data.frame = TRUE,which=1))
+View(htmlPage)
+

@@ -1,0 +1,79 @@
+---
+title: "Assign4-Part2"
+author: "KunalRelia"
+date: "April 12, 2016"
+output: html_document
+---
+
+Q2)CRAWLING TWITTER
+
+a + b +c{combined})
+setup credentials:
+
+```{r}
+require(twitteR)
+require(RCurl)
+consumer_key <-'jjIPimGE10JIOHFA2ZT6TGRXR'
+consumer_secret <-'gDtvw9o4fg7j93bKDD0S1zaBZ6D1aTJ7LR7BCuhSCWfYQzHitc'
+access_token <-'131157917-vRx5IuLyH52pZ8RvGI5PA0NWeY0CmBSSjSF4qoZr'
+access_secret <-'mfkKcSBtDTwDzwdIScHKcgv6F1lAOxadw8zPoBwTdHW3q'
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+```
+
+search using keywords:
+
+```{r, echo=FALSE}
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweets
+```
+
+Extract the usernames:
+```{r}
+k = 100
+tweetsDF <- twListToDF(myTweets)
+nameDF <- tweetsDF[, c("screenName")]
+uniqueNameDF <- unique(nameDF)
+hundredNamesDF <- head(uniqueNameDF, k)
+hundredNamesDF
+```
+
+```{r}
+require(networkD3)
+require(igraph)
+network_tw <- data.frame(src=character(), target=character(), stringsAsFactors=FALSE) 
+for(i in 1:100)
+{
+    start <- getUser(uniqueNameDF[i],retryOnRateLimit=900)
+    friends.object<-lookupUsers(start$getFriendIDs(retryOnRateLimit=900))
+    follower.object<-lookupUsers(start$getFollowerIDs(retryOnRateLimit=900))
+    
+    n<- length(friends.object)
+    m<- length(follower.object)
+    
+    friends <- sapply(friends.object[1:n],screenName)
+    followers <- sapply(follower.object[1:m],screenName)
+    
+    networkData <- data.frame(src=uniqueNameDF[i], target=friends)
+    network_tw <- merge(network_tw, networkData,  all=T)
+    networkData <- data.frame(src=followers, target=uniqueNameDF[i])
+    network_tw <- merge(network_tw, networkData,  all=T)
+}
+
+# degree assess
+g <- graph.data.frame(network_tw, directed = F)
+
+degree(g, mode = "total")
+
+degree_distribution(g)
+
+plot(degree_distribution(g))
+
+# Plot
+simpleNetwork(network_tw, zoom = T, linkDistance = 60, opacity = 0.5, linkColour = "grey", nodeColour = "purple",
+  nodeClickColour = "red", textColour = "blue")
+
+```
+Conclusion:
+Shown above is the twitter network of users who have tweeted on the topic "SXSW2016".
+The reason I have chosen this metric is that it helps in better visualization. 
+Also if a person "A" is following a person "B", then there will be an edge from A->B. This will help us because the in-degree of "B" will tell us the number of followers he/she has.

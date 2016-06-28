@@ -1,0 +1,369 @@
+---
+title: "Assign5-kbr263-KunalRelia"
+author: "KunalRelia"
+date: "April 25, 2016"
+output: html_document
+---
+
+### Question 1 - Visualization 
+
+**a) What metrics do you think are informative for me to understand from the data? How do you determine which metrics are important?**
+
+Steps(count) on hourly & daily basis is the metric that is important and informative. 
+
+We know that there is a difference between numbers and numbers that matter. This is what separates data from metrics. Analyzing data is an easy part but what analysis and choosing what data matters is the hard part. For a data to be metric, it needs to satisfy the criteria of:
+
+
+*refernce for below discussed topic: http://blog.trak.io/a-beginners-introduction-to-metrics-analytics-for-data-driven-growth/*
+
+**Accessible**: If everyone in your team can’t understand what the metric means, then it’s useless. People need to be able to discuss it, remember it, apply it to their daily work. This doesn’t just mean having simple, human-readable names for metrics, but also a clearly understandable explanation of how that metric is calculated and what it means in the context of your product and users.
+
+*Actionable is important as a metric should motivate us to make a decision based on it. In our case, steps help us conclude the walking done over a period* 
+
+**Actionable**: A metric is actionable if you can make a decision based on it’s result, and go and do something about it. The opposite of an actionable metric is a vanity metric.
+
+**Comparable**: If you can’t compare the metric to another date period, or to a different version of the product, then you have no frame of reference.
+
+**Rates or Ratios**: Counting absolute numbers can be useful, but monitoring the rate of change of that number, or the ratio of that number to another, is more valuable. Knowing the current speed of a car is OK, but knowing if it’s accelerating or braking is far more useful.
+
+
+
+**b) For each of the Daily and Hourly data sets, what form of graph and graphical objects are appropriate? Why?** 
+
+**Daily**
+
+For daily analysis, I will choose a line & point chart(time-series analysis) to show count of steps for each day.
+
+X-Axis: Date
+
+Y-Axis: Number of Steps
+
+Header: Week [current Week] or (for greater visualization) Month [Name of the Month]
+
+Line & Point Chart will show a good comparitive visualization of counts of steps across various days. The odds that a day will be go without walking is pretty less. It is expected that a person will definitely walk and take atleast few steps each day. An outlier may be a day when excessive walking is done.
+
+In short, we want to have Categorical	subdivisions on X	axis,	quantitative values on Y axis, and an emphasis on overall pattern and individual values.
+
+**Hourly**
+
+For hourly analysis, we can use a bar graph to depict the number of steps walked on an hourly basis(frequency distribution). 
+
+X-Axis: Hour (eg:00,01...13,14..)
+
+Y-Axis: Number of Steps
+
+Header: Date
+
+Bar graph will help us visualize the hourly trend in the steps taken. A lot of the hours are expected to have 0 steps (ex:when working,sleeping,etc.). Therefore, bars for such hours won't show. Line chart won't be a good visualization tool over here. Bar charts will help us clearly look at "active"" hours in a day. 
+
+Basically we want bar graphs with emphasis primarily on individual values.
+
+*Note: We can further use scatter plot to determine if there is a strong correlation between the time of the day and steps walked. This will help to reiterate the above mentioned claim of zero steps during sleeping time. (but this is NOT advisable for use of end customer as the aim here is not to show the correlation but the frequency distribution over the day)*
+
+**c) Generate two visualizations, keeping in mind principles we discussed in class.**
+
+```{r}
+#install.packages(chron)
+require(chron)
+
+data<-NULL
+hourly<-read.csv(file.choose(),sep=",",header=T)
+daily<-read.csv(file.choose(),sep=",",header=T)
+data = t(as.data.frame(strsplit(as.character(hourly$Start),' ')))
+data<-cbind(data,as.data.frame(hourly$Steps..count.))
+dataHourly<-as.data.frame(data)
+
+#User-Defined Function to calculate hourly steps
+myStepCalculatorFunction <- function(arg) {
+  
+  hours<-seq(from=1,to=24,by=1)
+  stepCtr<-vector(mode="numeric", length=24)
+  ctr<-vector(mode="numeric", length=24)
+
+  for(i in 1:length(dataHourly[,2]))
+  {
+    if(arg=="all" || arg==dataHourly[i,1]) {
+        if(dataHourly[i,2]=="0:00") {
+         stepCtr[1]=stepCtr[1]+dataHourly[i,3]
+         ctr[1]=ctr[1]+1
+         }
+        else if(dataHourly[i,2]=="1:00") {
+         stepCtr[2]=stepCtr[2]+dataHourly[i,3]
+         ctr[2]=ctr[2]+1
+         }
+        else if(dataHourly[i,2]=="2:00") {
+         stepCtr[3]=stepCtr[3]+dataHourly[i,3]
+         ctr[3]=ctr[3]+1
+         }
+        else if(dataHourly[i,2]=="3:00") {
+         stepCtr[4]=stepCtr[4]+dataHourly[i,3]
+         ctr[4]=ctr[4]+1
+         }
+        else if(dataHourly[i,2]=="4:00") {
+         stepCtr[5]=stepCtr[5]+dataHourly[i,3]
+         ctr[5]=ctr[5]+1
+         }
+        else if(dataHourly[i,2]=="5:00") {
+         stepCtr[6]=stepCtr[6]+dataHourly[i,3]
+         ctr[6]=ctr[6]+1
+         }
+        else if(dataHourly[i,2]=="6:00") {
+         stepCtr[7]=stepCtr[7]+dataHourly[i,3]
+         ctr[7]=ctr[7]+1
+         }
+        else if(dataHourly[i,2]=="7:00") {
+         stepCtr[8]=stepCtr[8]+dataHourly[i,3]
+         ctr[8]=ctr[8]+1
+         }
+        else if(dataHourly[i,2]=="8:00") {
+         stepCtr[9]=stepCtr[9]+dataHourly[i,3]
+         ctr[9]=ctr[9]+1
+         }
+        else if(dataHourly[i,2]=="9:00") {
+         stepCtr[10]=stepCtr[10]+dataHourly[i,3]
+         ctr[10]=ctr[10]+1
+         }
+        else if(dataHourly[i,2]=="10:00") {
+         stepCtr[11]=stepCtr[11]+dataHourly[i,3]
+         ctr[11]=ctr[11]+1
+         }
+        else if(dataHourly[i,2]=="11:00") {
+         stepCtr[12]=stepCtr[12]+dataHourly[i,3]
+         ctr[12]=ctr[12]+1
+         }
+        else if(dataHourly[i,2]=="12:00") {
+         stepCtr[13]=stepCtr[13]+dataHourly[i,3]
+         ctr[13]=ctr[13]+1
+         }
+        else if(dataHourly[i,2]=="13:00") {
+         stepCtr[14]=stepCtr[14]+dataHourly[i,3]
+         ctr[14]=ctr[14]+1
+         }
+        else if(dataHourly[i,2]=="14:00") {
+         stepCtr[15]=stepCtr[15]+dataHourly[i,3]
+         ctr[15]=ctr[15]+1
+         }
+        else if(dataHourly[i,2]=="15:00") {
+         stepCtr[16]=stepCtr[16]+dataHourly[i,3]
+         ctr[16]=ctr[16]+1
+         }
+        else if(dataHourly[i,2]=="16:00") {
+         stepCtr[17]=stepCtr[17]+dataHourly[i,3]
+         ctr[17]=ctr[17]+1
+         }
+        else if(dataHourly[i,2]=="17:00") {
+         stepCtr[18]=stepCtr[18]+dataHourly[i,3]
+         ctr[18]=ctr[18]+1
+         }
+        else if(dataHourly[i,2]=="18:00") {
+         stepCtr[19]=stepCtr[19]+dataHourly[i,3]
+         ctr[19]=ctr[19]+1
+         }
+        else if(dataHourly[i,2]=="19:00") {
+         stepCtr[20]=stepCtr[20]+dataHourly[i,3]
+         ctr[20]=ctr[20]+1
+         }
+        else if(dataHourly[i,2]=="20:00") {
+         stepCtr[21]=stepCtr[21]+dataHourly[i,3]
+         ctr[21]=ctr[21]+1
+         }
+        else if(dataHourly[i,2]=="21:00") {
+         stepCtr[22]=stepCtr[22]+dataHourly[i,3]
+         ctr[22]=ctr[22]+1
+         }
+        else if(dataHourly[i,2]=="22:00") {
+         stepCtr[23]=stepCtr[23]+dataHourly[i,3]
+         ctr[23]=ctr[23]+1
+         }
+        else if(dataHourly[i,2]=="23:00") {
+         stepCtr[24]=stepCtr[24]+dataHourly[i,3]
+         ctr[24]=ctr[24]+1
+        }
+    }
+  }
+
+  average<-stepCtr/ctr
+
+  if(arg=="all") {
+    barplot(average, main="Average Hourly steps for the year",names.arg=seq(from=0,to=23,by=1),axes=F)
+  } else {
+    barplot(average, main=paste("Hourly steps for ",arg),names.arg=seq(from=0,to=23,by=1),axes=F)
+  }
+  
+  usr <- par("usr")
+  par(usr=c(usr[1:2], 0, round(max(average),digits = 0)))
+  axis(2,at=seq(0,round(max(average),digits = 0),ceiling(max(average)/4)))
+  title(xlab="Time (in Hours)", col.lab=rgb(0,0.5,0))
+  title(ylab="Steps", col.lab=rgb(0,0.5,0))
+  
+}
+
+myStepCalculatorFunction("all")
+
+#We can have any user input here
+#date<-readline(prompt="Enter a date between 02/16/15 & 4/15/16: ")
+date<-"12/27/15"
+myStepCalculatorFunction(date)
+
+#Daily analysis starts here
+###########################
+
+data2<-NULL
+data2 = t(as.data.frame(strsplit(as.character(daily$Start),' ')))
+data2<-cbind(data2,as.data.frame(daily$Steps..count.))
+dataDaily<-as.data.frame(data2)
+
+thetimes1<-chron(dates=as.character(dataDaily[,1]),format=c(dates="m/d/y"))
+thetimes1<-as.data.frame(thetimes1)
+thetimes1$day <- weekdays(as.Date(thetimes1$thetimes1))
+dataDaily<-cbind(dataDaily,as.data.frame(thetimes1$day))
+
+#User-Defined Function to calculate daily steps
+myDailyStepCalculatorFunction <- function(arg) {
+  
+  weekCtr=0;
+  stepCtr<-vector(mode="numeric", length=7)
+  ctr<-vector(mode="numeric", length=7)
+
+  for(i in 1:length(dataDaily[,1]))
+  {
+    if(arg==dataDaily[i,1] || (weekCtr>=1 && weekCtr<=7)) {
+      weekCtr=weekCtr+1
+    }
+    
+    
+    if(arg=="all" || (weekCtr>=1 && weekCtr<=7)) {
+        if(dataDaily[i,4]=="Monday") {
+         stepCtr[1]=stepCtr[1]+dataDaily[i,3]
+         ctr[1]=ctr[1]+1
+         } 
+        else if(dataDaily[i,4]=="Tuesday") {
+         stepCtr[2]=stepCtr[2]+dataDaily[i,3]
+         ctr[2]=ctr[2]+1
+         } 
+        else if(dataDaily[i,4]=="Wednesday") {
+         stepCtr[3]=stepCtr[3]+dataDaily[i,3]
+         ctr[3]=ctr[3]+1
+         } 
+        else if(dataDaily[i,4]=="Thursday") {
+         stepCtr[4]=stepCtr[4]+dataDaily[i,3]
+         ctr[4]=ctr[4]+1
+         } 
+        else if(dataDaily[i,4]=="Friday") {
+         stepCtr[5]=stepCtr[5]+dataDaily[i,3]
+         ctr[5]=ctr[5]+1
+         } 
+        else if(dataDaily[i,4]=="Saturday") {
+         stepCtr[6]=stepCtr[6]+dataDaily[i,3]
+         ctr[6]=ctr[6]+1
+         } 
+        else if(dataDaily[i,4]=="Sunday") {
+         stepCtr[7]=stepCtr[7]+dataDaily[i,3]
+         ctr[7]=ctr[7]+1
+         }
+    }
+  }
+
+  average<-stepCtr/ctr
+
+  #simple steps plot
+  plot(average, col="blue", type="o", ylim=range(0,round(max(average),digits=0)),ann=FALSE,axes=FALSE)
+  
+  axis(1, at=1:7, lab=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))
+  axis(2, las=1, at=2000*0:max(average))
+  box()
+  title(xlab="Days", col.lab=rgb(0,0.5,0))
+  title(ylab="Steps", col.lab=rgb(0,0.5,0))
+  
+  if(arg=="all") {
+    title(main="Average Daily Steps for the Year", col.main="red", font.main=4)
+  } else {
+    title(main=paste("Daily Steps for the week of ",arg), col.main="red", font.main=4)  
+  }
+  
+  #steps & Calories plot (based on fact that 1 calorie is burnt for every 20 steps)
+  plot(average, col="blue", type="o", ylim=range(0,round(max(average),digits=0)),ann=FALSE,axes=FALSE)
+  
+  axis(1, at=1:7, lab=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))
+  axis(2, las=1, at=2000*0:max(average))
+  box()
+  lines(average/20,type="o", pch=22, lty=2, col="red")
+  title(xlab="Days", col.lab=rgb(0,0.5,0))
+  title(ylab="Steps", col.lab=rgb(0,0.5,0))
+  
+  if(arg=="all") {
+    title(main="Average Daily Steps & Calories for the Year", col.main="red", font.main=4)
+  } else {
+    title(main=paste("Daily Steps & Calories for the week of ",arg), col.main="red", font.main=4)  
+  }
+  
+  legend(1, 4000, c("steps","calories"), cex=0.8,col=c("blue","red"), pch=21:22, lty=1:2);
+}
+
+myDailyStepCalculatorFunction("all")
+
+#We can have any user input here
+#date<-readline(prompt="Enter a date between 02/16/15 & 4/15/16: ")
+date<-"12/21/15"
+myDailyStepCalculatorFunction(date)
+
+
+
+```
+
+### Question 2 - Evaluation 
+
+**a)  If you have a classification model that outputs predicted probabilities, how could you convert those probabilities to class predictions? **
+
+We can plot these probablities on x-axis. And then based on the threshold value selected, we can classify all the values above threshold as class "1" and below threshold as class "0".
+
+**b) Why are predicted probabilities (rather than just class predictions) required to generate an ROC curve?**
+
+Our motivation to use ROC curve is to study the performance of classifier at various threshold levels. Hence, if we have class predictions, we can just have a certain values and can't have thresholds. Predictive probabilities facilitate the thresholds.
+
+**c)  Could you use an ROC curve for a regression problem? Why or why not?**
+
+No
+
+This is becuase a regression problem is not a classification problem. In other words, ROC curve is a plot between True Positives & False Positives. Such fields can not be obtained from a regression problem.
+
+**d) What's another term for True Positive Rate?**
+
+Sensitivity or Recall
+
+**e) If I wanted to increase specificity, how would I change the classification threshold?**
+
+Increase the value of Threshold 
+
+**f) Is it possible to adjust your classification threshold such that both sensitivity and specificity increase simultaneously? Why or why not?**
+
+No. Both are inversely proportional.
+
+Reason: Increase in Threshold will lead to increase in specificity & decrease in sensitivity & Decrease in Threshold will lead to Decrease in specificity & Increase in sensitivity
+
+**g) What are the primary benefits of ROC curves over classification accuracy?**
+
+ROC curves help us to have a look at the performance of the classifier graphically rather than viewing its data analysis. Further, it doesn't require setting up a classification threshold. It also works well for unbalanced classes.
+
+
+
+**h) What should you do if you have a low AUC value like 0.15?**
+
+We can take the following step :
+
+*Most importantly,we can simply change the yes to no and no to yes (reverse the predictions made).*
+
+Alternatively(not so effective), having more predictors or less predictors than what is required in analysis may lead to a low AUC.Hence, consider changing the set of predictors.
+Also, check that there are no missing values.
+
+
+**i) What's a real-world scenario in which you would prefer high specificity (rather than high sensitivity) for your classifier?**
+
+We know that False Positives =  1 - Specificity.
+
+Hence, a clear real-world scenario where we want to have a high specificity or low False Positives is in the medical test of detecting pregnancies (AFP test). This is because the cost or risk of followup therapy/tests are high and the reason for test itself is not life-threatening. The harm from a false positive test is further expensive tests like sonography & more importantly parents are given a false hope and happiness of having a child even when one doesnot exist. 
+
+  *references for this question:https://www.health.ny.gov/diseases/chronic/discreen.htm, https://onlinecourses.science.psu.edu/stat507/node/71, https://www.youtube.com/watch?v=vtYDyGGeQyo*
+  
+
+**Special Note: I have coloborated with Fenil Tailor for discussing some of the topics of this assignment**

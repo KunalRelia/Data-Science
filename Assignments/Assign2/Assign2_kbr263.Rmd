@@ -1,0 +1,141 @@
+---
+title: "Assign2_kbr263"
+author: "KunalRelia"
+date: "February 28, 2016"
+output: pdf_document
+---
+
+#Question1
+#a)
+#install.packages("timeSeries")
+require(timeSeries)
+#install.packages("tseries")
+require(tseries)
+jnjData<-read.table(file.choose(),header = FALSE)
+adf.test(diff(ts(data=jnjData,deltat = 1/4)))
+kpss.test(diff(ts(data = jnjData,deltat = 1/4)))
+jnjDataDiff<-diff(ts(data = jnjData,deltat = 1/4))
+
+#b)
+lag.plot(jnjDataDiff,9,do.lines=F)
+acf(jnjDataDiff,lag.max = 20)
+pacf(jnjDataDiff,lag.max = 20)
+
+#c)
+#install.packages("forecast")
+require(“forecast”)
+
+arima(jnjDataDiff,order = c(2,0,5))
+arima(jnjDataDiff,order = c(1,0,4))
+arima(jnjDataDiff,order = c(0,0,3))
+arima(jnjDataDiff,order = c(0,0,2))
+arima(jnjDataDiff,order = c(0,0,1))
+arima(jnjDataDiff,order = c(0,0,0))
+arima(jnjDataDiff,order = c(2,0,5))
+arima(jnjDataDiff,order = c(3,0,6))
+arima(jnjDataDiff,order = c(4,0,7))
+arima(jnjDataDiff,order = c(5,0,8))
+
+#d)
+tsdiag(arima(jnjDataDiff,order = c(4,0,7)))
+Box.test(arima(jnjDataDiff,order = c(4,0,7))$residuals,lag=1)
+
+#e)
+predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)
+
+#f)
+plot(jnjDataDiff)
+
+lines(predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)$pred,col="red")
+
+lines(predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)$pred+2*predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)$se,col="blue")
+
+lines(predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)$pred-2*predict(arima(jnjDataDiff, order = c(1,0,1)),n.ahead=4)$se,col="blue")
+
+#Question2
+
+#a)
+glassData<-read.table(file.choose(),header=F,sep=",")
+glassDataFrame<-data.frame(glassData)
+collectionnos<-c(1,2,3,4)
+glassDataFrame["bi"]<-ifelse(glassDataFrame$V11 %in% collectionnos,0,1)
+header<-c("id","RI","Na","Mg","Al","Si","K","Ca","Ba","Fe","Type","bi")
+colnames(glassDataFrame)<-unlist(header) 
+View(glassDataFrame)
+
+#b)
+attach(glassDataFrame)
+fea=matrix(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe),nrow = 214, ncol=9,byrow = F)
+
+model=lm(glassDataFrame$bi~RI+Na+Mg+Al+Si+K+Ca+Ba+Fe)
+y=model$model$'glassDataFrame$bi'
+
+#c)
+predColDF<-data.frame(y)
+normalize<-function(x)  
+{ 
+   return ((x-min(x))/(max(x)-min(x))) 
+}
+normalizeGlassData<-as.data.frame(lapply(glassDataFrame[,c(2,3,4,5,6,7,8,9,10)],normalize))
+sampleTrainSet<-floor(0.75*nrow(normalizeGlassData))
+set.seed(123)
+train<-sample(seq_len(nrow(normalizeGlassData)),size=sampleTrainSet)
+traindata<-normalizeGlassData[train,]
+trainres<-(predColDF[train,])
+testdata<-normalizeGlassData[-train,]
+testres<-(predColDF[-train,])
+
+#d)
+#install.packages("class")
+require(class)
+knn(train=traindata, test=testdata,cl=trainres,k=5)
+
+#e)
+#install.packages("e1071")
+require(e1071)
+#install.packages("caret")
+require(caret)
+confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres,k=5))
+
+#f)
+kValues<-c(1,2,3,4,6,7,9,12,15,18,21)
+for(val in kValues)
+{
+print("k=")
+print(val)
+print(confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres,k=val)))
+}
+
+#g)
+acc<-integer()
+for(val in kValues)
+{
+ans<-confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres, k=val))
+acc<-c(acc,ans$overall[1])
+}
+plot(kValues,acc,xlab="values of K",ylab="Accuracy",type="l")
+
+#h)
+mean(testres)
+
+#BONUS
+attach(glassDataFrame)
+fea=matrix(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe),nrow = 214, ncol=9,byrow = F)
+model=lm(glassDataFrame$bi~Na+Si+K+Ca)
+summary(model)
+y=model$model$'glassDataFrame$bi'
+predColDF<-data.frame(y)    
+normalize<-function(x)  
+{ 
+   return ((x-min(x))/(max(x)-min(x))) 
+}
+
+normalizeGlassData<-as.data.frame(lapply(glassDataFrame[,c(3,6,7,8)],normalize))
+sampleTrainSet<-floor(0.75*nrow(normalizeGlassData))
+set.seed(123)
+train<-sample(seq_len(nrow(normalizeGlassData)),size=sampleTrainSet)
+traindata<-normalizeGlassData[train,]
+trainres<-(predColDF[train,])
+testdata<-normalizeGlassData[-train,]
+testres<-(predColDF[-train,])
+confusionMatrix(testres,knn(train=traindata, test=testdata,cl=trainres,k=5))

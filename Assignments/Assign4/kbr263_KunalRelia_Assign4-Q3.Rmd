@@ -1,0 +1,186 @@
+---
+title: "Assign4-Part3"
+author: "KunalRelia"
+date: "April 12, 2016"
+output: html_document
+---
+
+Q3)Developing a Languauge Model
+
+all subquestions togather)
+setup credentials:
+
+```{r}
+require(twitteR)
+require(RCurl)
+consumer_key <-'jjIPimGE10JIOHFA2ZT6TGRXR'
+consumer_secret <-'gDtvw9o4fg7j93bKDD0S1zaBZ6D1aTJ7LR7BCuhSCWfYQzHitc'
+access_token <-'131157917-vRx5IuLyH52pZ8RvGI5PA0NWeY0CmBSSjSF4qoZr'
+access_secret <-'mfkKcSBtDTwDzwdIScHKcgv6F1lAOxadw8zPoBwTdHW3q'
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+```
+
+search using keywords:
+
+```{r, echo=FALSE}
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweets
+```
+
+Extract the usernames:
+```{r}
+k = 100
+tweetsDF <- twListToDF(myTweets)
+nameDF <- tweetsDF[, c("screenName")]
+uniqueNameDF <- unique(nameDF)
+hundredNamesDF <- head(uniqueNameDF, k)
+hundredNamesDF
+```
+
+Fetch the tweets containing the hashtag made by above selected users:
+
+```{r}
+From <- "from:"
+sxsw <- "+#SXSW2016"
+
+tweets_list <- data.frame(src=character(), target=character(), stringsAsFactors=FALSE) 
+
+for(j in 1:100)
+{
+  if(j %% 5 == 0){Sys.sleep(600)}
+    tweets_object<-do.call("rbind",lapply(searchTwitter(paste(From,hundredNamesDF[j],sxsw,sep = ""),resultType = "recent",lang="en"), as.data.frame))
+    tweets_list <- merge(tweets_list, tweets_object,  all=T)
+}
+tweetsDF<-tweets_list
+
+```
+
+Print the 10 most frequent sequences:
+```{r}
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+tweetsDF <- twListToDF(myTweets)
+library(tm)
+tweets_source <- VectorSource(tweetsDF$text)
+
+corpus <- Corpus(tweets_source)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+dtm <- DocumentTermMatrix(corpus)
+dtm2 <- as.matrix(dtm)
+
+frequency <- colSums(dtm2)
+frequency <- sort(frequency, decreasing=TRUE)
+frequency[1:10]
+
+```
+
+Sum of all frequencies of all sequences: 
+```{r}
+BigramTokenizer <-
+  function(x)
+    unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
+
+tdm <- TermDocumentMatrix(corpus, control = list(tokenize = BigramTokenizer))
+tdm2 <- as.matrix(tdm)
+
+frequency_2 <- rowSums(tdm2)
+
+frequency_2 <- sort(frequency_2, decreasing=TRUE)
+frequency_2[1:10]
+
+
+trigramTokenizer <-
+  function(x)
+    unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
+
+tdm_3 <- TermDocumentMatrix(corpus, control = list(tokenize = trigramTokenizer))
+tdm2_3 <- as.matrix(tdm_3)
+
+frequency_3 <- rowSums(tdm2_3)
+frequency_3 <- sort(frequency_3, decreasing=TRUE)
+frequency_3[1:10]
+
+#Sum is printed here
+sum(frequency_3)
+sum(frequency_2)
+sum(frequency)
+
+dist(as.data.frame(tweetsDF$text), method = "euclidean")
+
+stringsim(tweetsDF$text[1],tweetsDF$text[2] , method = "hamming")
+
+
+stringdistmatrix("abc abd","cdf",method ="qgram",q=2)
+
+```
+
+Distance Measure & Network based on Language Model:
+```{r}
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+k = 100
+tweetsDF <- twListToDF(myTweets)
+nameDF <- tweetsDF[, c("screenName")]
+uniqueNameDF <- unique(nameDF)
+hundredNamesDF <- head(uniqueNameDF, k)
+networkdata1 <- data.frame(src=character(), target=character(),distance=numeric(),stringsAsFactors=FALSE) 
+
+for(i in 1:100)
+{
+  for(j in 1:100)
+  {
+  networkdata2<-data.frame(src=uniqueNameDF[i],target=uniqueNameDF[j],stringsAsFactors=FALSE)
+  networkdata1<-merge(networkdata1, networkdata2,  all=T)
+  }
+}
+
+
+tweets_frame1<-data.frame(screenname=tweetsDF$screenName,tweets=tweetsDF$text,stringsAsFactors=FALSE)
+
+tweets_frame1$tweets<-iconv(tweets_frame1$tweets,"UTF-8")
+
+for (k in 1:length(networkdata1$src))
+{
+  networkdata1$distance[k]<-stringdist(as.character(tweets_frame1$tweets[tweets_frame1$screenname==networkdata1$src[k]]),as.character(tweets_frame1$tweets[tweets_frame1$screenname == networkdata1$target[k]]), method = "qgram", q = 1)
+}
+
+library(ngram)
+str <- "A B A C A B B"
+ng <- ngram(str, 3)
+ng
+
+
+str <- "A B A C A B B"
+ng <- ngram(str,2)
+get.ngrams(ng)
+
+
+words <- c("a", "b", "c")
+wordcount(words)
+str <- concat(words)
+wordcount(str)
+
+
+BigramTokenizer <-
+  function(x)
+    unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
+
+tdm <- TermDocumentMatrix(corpus, control = list(tokenize = BigramTokenizer))
+tdm2 <- as.matrix(tdm)
+
+frequency_2 <- rowSums(tdm2)
+frequency_2 <- sort(frequency_2, decreasing=TRUE)
+
+
+
+trigramTokenizer <-
+  function(x)
+    unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
+
+tdm_3 <- TermDocumentMatrix(corpus, control = list(tokenize = trigramTokenizer))
+tdm2_3 <- as.matrix(tdm_3)
+
+frequency_3 <- rowSums(tdm2_3)
+frequency_3 <- sort(frequency_3, decreasing=TRUE)
+```
